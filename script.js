@@ -13,23 +13,98 @@ const referenceData = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-    const weightSelect = document.getElementById('patternWeight');
+    const selectMeters = document.getElementById('patternWeightMeters');
+    const selectGrams = document.getElementById('patternWeightGrams');
+
     referenceData.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.weight;
-        option.textContent = item.weight;
-        weightSelect.appendChild(option);
+        const opt1 = document.createElement('option');
+        opt1.value = item.weight;
+        opt1.textContent = item.weight;
+        selectMeters.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = item.weight;
+        opt2.textContent = item.weight;
+        selectGrams.appendChild(opt2);
     });
+
+    // Default selection
+    selectMeters.value = "DK (8 ply)";
+    selectGrams.value = "DK (8 ply)";
+
+    // Toggle Input Methods
+    const radioMeters = document.getElementById('methodMeters');
+    const radioGrams = document.getElementById('methodGrams');
+    const metersContainer = document.getElementById('metersInputContainer');
+    const gramsContainer = document.getElementById('gramsInputContainer');
+    const patternMetersInput = document.getElementById('patternMeters');
+
+    function updateMethodVisibility() {
+        if (radioMeters.checked) {
+            metersContainer.classList.remove('d-none');
+            gramsContainer.classList.add('d-none');
+            patternMetersInput.setAttribute('required', 'required');
+        } else {
+            metersContainer.classList.add('d-none');
+            gramsContainer.classList.remove('d-none');
+            patternMetersInput.removeAttribute('required');
+        }
+    }
+
+    radioMeters.addEventListener('change', updateMethodVisibility);
+    radioGrams.addEventListener('change', updateMethodVisibility);
+
+    // Dynamic g -> m calculator listener
+    const patternGramsInput = document.getElementById('patternGrams');
+    const refGramsInput = document.getElementById('refGrams');
+    const refMetersInput = document.getElementById('refMeters');
+    const calcMetersOutput = document.getElementById('calcMetersOutput');
+
+    function calculateGramsToMeters() {
+        const pGrams = parseFloat(patternGramsInput.value) || 0;
+        const rGrams = parseFloat(refGramsInput.value) || 0;
+        const rMeters = parseFloat(refMetersInput.value) || 0;
+
+        if (pGrams > 0 && rGrams > 0 && rMeters > 0) {
+            const calculatedMeters = pGrams * (rMeters / rGrams);
+            calcMetersOutput.value = Math.round(calculatedMeters) + " m";
+            return calculatedMeters;
+        } else {
+            calcMetersOutput.value = "0 m";
+            return 0;
+        }
+    }
+
+    patternGramsInput.addEventListener('input', calculateGramsToMeters);
+    refGramsInput.addEventListener('input', calculateGramsToMeters);
+    refMetersInput.addEventListener('input', calculateGramsToMeters);
 });
 
 document.getElementById('calculatorForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    // Inputs
-    const patternMeters = parseFloat(document.getElementById('patternMeters').value);
-    const weightCategory = document.getElementById('patternWeight').value;
+    const isGramsMode = document.getElementById('methodGrams').checked;
+    let patternMeters = 0;
+    let weightCategory = "";
+
+    if (isGramsMode) {
+        const pGrams = parseFloat(document.getElementById('patternGrams').value) || 0;
+        const rGrams = parseFloat(document.getElementById('refGrams').value) || 0;
+        const rMeters = parseFloat(document.getElementById('refMeters').value) || 0;
+
+        if (!pGrams || !rGrams || !rMeters) {
+            alert("Please fill in all Gram-to-Meter conversion fields (Pattern Grams, Reference Grams, and Reference Meters).");
+            return;
+        }
+
+        patternMeters = pGrams * (rMeters / rGrams);
+        weightCategory = document.getElementById('patternWeightGrams').value;
+    } else {
+        patternMeters = parseFloat(document.getElementById('patternMeters').value);
+        weightCategory = document.getElementById('patternWeightMeters').value;
+    }
+
     const standardType = document.getElementById('targetStandard').value;
-    
     const nmPlies = parseFloat(document.getElementById('nmPlies').value);
     const nmMeterage = parseFloat(document.getElementById('nmMeterage').value);
     const coneGrams = parseFloat(document.getElementById('coneGrams').value);
@@ -39,13 +114,12 @@ document.getElementById('calculatorForm').addEventListener('submit', function(e)
     const weightObj = referenceData.find(w => w.weight === weightCategory);
     let targetMg = standardType === 'industrial' ? weightObj.indMg : weightObj.handMg;
     
-    // Fallback if industrial is not defined for a category
     if (!targetMg) {
         targetMg = weightObj.handMg;
         alert("Industrial standard not available for this weight. Falling back to hand-knitting standard.");
     }
 
-    // Calculations (replicating the spreadsheet)
+    // Calculations
     const originalMg = nmMeterage / nmPlies;
     const strandsToHold = Math.ceil(originalMg / targetMg);
     const workingMg = originalMg / strandsToHold;
@@ -61,6 +135,10 @@ document.getElementById('calculatorForm').addEventListener('submit', function(e)
     document.getElementById('resCones').textContent = conesToOrder;
     document.getElementById('resTotalCost').textContent = "€" + totalPrice.toFixed(2);
     
+    document.getElementById('resPatternRequirement').textContent = isGramsMode 
+        ? `${document.getElementById('patternGrams').value}g Reference Yarn (➜ ${Math.round(patternMeters)} meters)`
+        : `${patternMeters} meters`;
+
     document.getElementById('resTargetMg').textContent = targetMg.toFixed(2);
     document.getElementById('resOrigMg').textContent = originalMg.toFixed(2);
     document.getElementById('resWorkingMg').textContent = workingMg.toFixed(2);

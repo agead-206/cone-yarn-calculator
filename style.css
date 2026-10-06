@@ -18,6 +18,16 @@ body {
     transform: translateY(-2px);
 }
 
+.btn-outline-primary {
+    color: #4361ee;
+    border-color: #4361ee;
+}
+
+.btn-check:checked + .btn-outline-primary {
+    background-color: #4361ee;
+    border-color: #4361ee;
+}
+
 .text-primary {
     color: #4361ee !important;
 }

@@ -17,32 +17,84 @@
 
     <!-- Configuration Card -->
     <div class="card shadow-sm mb-4 border-0">
-        <div class="card-body bg-white rounded">
+        <div class="card-body bg-white rounded p-4">
             <h5 class="card-title text-secondary border-bottom pb-2 mb-4">Project & Yarn Details</h5>
             <form id="calculatorForm">
-                <div class="row g-3">
+                
+                <!-- Input Method Selection -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Pattern Requirement Input Method</label>
+                    <div class="btn-group w-100" role="group" id="inputMethodGroup">
+                        <input type="radio" class="btn-check" name="inputMethod" id="methodMeters" value="meters" checked>
+                        <label class="btn btn-outline-primary" for="methodMeters">📏 Direct Meters Needed</label>
+
+                        <input type="radio" class="btn-check" name="inputMethod" id="methodGrams" value="grams">
+                        <label class="btn btn-outline-primary" for="methodGrams">⚖️ Convert Pattern Grams to Meters</label>
+                    </div>
+                </div>
+
+                <!-- Direct Meters Container -->
+                <div id="metersInputContainer" class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Pattern Meters Needed</label>
+                        <label class="form-label fw-bold">Pattern Meters Needed (m)</label>
                         <input type="number" class="form-control" id="patternMeters" placeholder="e.g., 1500" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Pattern Weight Category</label>
-                        <select class="form-select" id="patternWeight" required>
+                        <select class="form-select" id="patternWeightMeters" required>
                             <!-- Options populated by JS -->
                         </select>
                     </div>
-                    
-                    <div class="col-md-6 mt-4">
+                </div>
+
+                <!-- Grams to Meters Converter Container -->
+                <div id="gramsInputContainer" class="row g-3 d-none p-3 mb-3 bg-light rounded border">
+                    <div class="col-12">
+                        <h6 class="text-primary fw-bold">⚖️ Reference Yarn Conversion (g ➔ m)</h6>
+                        <p class="text-muted small mb-3">If your pattern specifies yarn in grams (e.g. 280g), enter the reference yarn's length/weight ratio to convert to meters.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Pattern Grams Needed (g)</label>
+                        <input type="number" class="form-control" id="patternGrams" placeholder="e.g., 280">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Reference Yarn Weight (g)</label>
+                        <input type="number" class="form-control" id="refGrams" placeholder="e.g., 100">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Reference Yarn Meters (m)</label>
+                        <input type="number" class="form-control" id="refMeters" placeholder="e.g., 230">
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <label class="form-label fw-bold">Calculated Meters Needed:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-white fw-bold text-success" id="calcMetersOutput" readonly value="0 m">
+                        </div>
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <label class="form-label fw-bold">Pattern Weight Category</label>
+                        <select class="form-select" id="patternWeightGrams">
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Target Standard Choice -->
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
                         <label class="form-label fw-bold text-info">Target Standard</label>
                         <select class="form-select border-info" id="targetStandard" required>
                             <option value="hand">Hand-Knitting Standard (Ravelry)</option>
                             <option value="industrial">Industrial Standard (ColourMart)</option>
                         </select>
-                        <small class="text-muted d-block mt-1">Cone yarns often require industrial m/g values.</small>
+                        <small class="text-muted d-block mt-1">Industrial targets reflect unwashed cone yarn density.</small>
                     </div>
-                    
-                    <div class="col-12 mt-4">
-                        <h6 class="text-secondary fw-bold">Cone Yarn Specifications</h6>
+                </div>
+
+                <!-- Cone Yarn Specs -->
+                <div class="row g-3 mt-4">
+                    <div class="col-12">
+                        <h6 class="text-secondary fw-bold border-bottom pb-2">🧶 Cone Yarn Specifications</h6>
                     </div>
 
                     <div class="col-md-3">
@@ -62,6 +114,7 @@
                         <input type="number" step="0.01" class="form-control" id="conePrice" placeholder="e.g., 15.95" required>
                     </div>
                 </div>
+
                 <div class="mt-4 text-center">
                     <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow">Calculate Yarn Needed</button>
                 </div>
@@ -100,6 +153,7 @@
 
             <div class="row text-start text-muted small">
                 <div class="col-md-6">
+                    <p class="mb-1"><strong>Pattern Requirement Used:</strong> <span id="resPatternRequirement"></span></p>
                     <p class="mb-1"><strong>Target Thickness:</strong> <span id="resTargetMg"></span> m/g</p>
                     <p class="mb-1"><strong>Single Strand Thickness:</strong> <span id="resOrigMg"></span> m/g</p>
                     <p class="mb-1"><strong>Working Bundle Thickness:</strong> <span id="resWorkingMg"></span> m/g</p>

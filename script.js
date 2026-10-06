@@ -108,7 +108,8 @@ document.getElementById('calculatorForm').addEventListener('submit', function(e)
     const nmPlies = parseFloat(document.getElementById('nmPlies').value);
     const nmMeterage = parseFloat(document.getElementById('nmMeterage').value);
     const coneGrams = parseFloat(document.getElementById('coneGrams').value);
-    const conePrice = parseFloat(document.getElementById('conePrice').value);
+    const conePriceInput = document.getElementById('conePrice').value.trim();
+    const conePrice = conePriceInput !== "" ? parseFloat(conePriceInput) : null;
 
     // Look up target m/g
     const weightObj = referenceData.find(w => w.weight === weightCategory);
@@ -127,13 +128,15 @@ document.getElementById('calculatorForm').addEventListener('submit', function(e)
     const totalStrandMeters = patternMeters * strandsToHold;
     const totalGramsNeeded = totalStrandMeters / originalMg;
     const conesToOrder = Math.ceil(totalGramsNeeded / coneGrams);
-    const totalPrice = conesToOrder * conePrice;
-    const pricePer1000m = (totalPrice / patternMeters) * 1000;
+
+    const hasPrice = conePrice !== null && !isNaN(conePrice);
+    const totalPrice = hasPrice ? conesToOrder * conePrice : null;
+    const pricePer1000m = hasPrice ? (totalPrice / patternMeters) * 1000 : null;
 
     // Display Results
     document.getElementById('resStrands').textContent = strandsToHold;
     document.getElementById('resCones').textContent = conesToOrder;
-    document.getElementById('resTotalCost').textContent = "€" + totalPrice.toFixed(2);
+    document.getElementById('resTotalCost').textContent = hasPrice ? "€" + totalPrice.toFixed(2) : "N/A";
     
     document.getElementById('resPatternRequirement').textContent = isGramsMode 
         ? `${document.getElementById('patternGrams').value}g Reference Yarn (➜ ${Math.round(patternMeters)} meters)`
@@ -145,7 +148,7 @@ document.getElementById('calculatorForm').addEventListener('submit', function(e)
     
     document.getElementById('resTotalMeters').textContent = Math.round(totalStrandMeters);
     document.getElementById('resTotalGrams').textContent = Math.round(totalGramsNeeded);
-    document.getElementById('resPricePer1000').textContent = "€" + pricePer1000m.toFixed(2);
+    document.getElementById('resPricePer1000').textContent = hasPrice ? "€" + pricePer1000m.toFixed(2) : "N/A";
 
     document.getElementById('resultsCard').classList.remove('d-none');
 });
